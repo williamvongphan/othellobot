@@ -121,7 +121,6 @@ class GameBoard:
                     str += 'W'
                 else:
                     str += '.'
-            str += ' '
         return str
 
     def reset(self):

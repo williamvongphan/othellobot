@@ -1,4 +1,5 @@
 import json
+import json_lines
 import math
 import threading
 
@@ -22,13 +23,21 @@ def str_to_tuple(str_):
     return tuple(map(int, str_.split(',')))
 
 
+def board_string_to_number(board_string):
+    # . = 0, B = 1, W = 2
+    # 0 = empty, 1 = black, 2 = white
+    num = 0
+    for i in range(64):
+        if board_string[i] == '.':
+            num = num * 3
+        elif board_string[i] == 'B':
+            num = num * 3 + 1
+        elif board_string[i] == 'W':
+            num = num * 3 + 2
+    return num
+
 def handle(el1, el2, el3):
-    return str(el1) + "|" + str(el2) + "|" + str(el3)
-
-
-def unhandle(str_):
-    each = str_.split("|")
-    return each[0], each[1], each[2]
+    return str(el1) + "|" + board_string_to_number(str(el2)) + "|" + str(el3)
 
 
 def traverse_and_replace_tuples_in_keys_with_strings(dictionary):
@@ -167,6 +176,7 @@ class SelfPlay:
             self.update_q(self.game_state, None, self.get_reward(self.game_state))
             print("Game " + str(i) + " over.")
             self.info["rounds_trained"] += 1
+            self.info["num_params"] = len(self.q)
             if i % 5 == 0:
                 self.save_q()
             self.game_state.reset()

@@ -2,6 +2,15 @@
 <!-- Othello AI Web template -->
 <!-- Original inspiration: http://bert.stuy.edu/pbrooks/ai/othello/othello_setup.py?gamedriver=http://bert.stuy.edu/pbrooks/ai/othello/GameDriver.py&progfile=othello-pb-minimax.py -->
 <head>
+  <title>Othello</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="othello.png">
+    <meta name="og:title" content="Othello">
+    <meta name="og:description" content="Othello is a two-player strategy game played on a square board. The goal of the game is to capture all of the opponent's pieces.">
+    <meta name="og:image" content="othello.png">
+    <meta name="theme-color" content="#000000">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.css" rel="stylesheet">
@@ -322,6 +331,10 @@
             player_turn = 2;
             document.getElementById("player-turn").innerHTML = "<strong>White</strong> (Player 2)";
         }
+
+        // Update Selfplay statistics
+        document.getElementById("selfplay-games-played").innerHTML = data.selfplay_info.rounds_trained;
+        document.getElementById("selfplay-parameters").innerHTML = data.selfplay_info.num_params;
 
         // Update global turn state
         user_can_click = true;
