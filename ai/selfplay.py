@@ -1,5 +1,6 @@
 import json
 import json_lines
+import base64
 import math
 import threading
 
@@ -36,8 +37,11 @@ def board_string_to_number(board_string):
             num = num * 3 + 2
     return num
 
+def number_to_b64(num):
+    return base64.b64encode(str(num).encode()).decode()
+
 def handle(el1, el2, el3):
-    return str(el1) + "|" + board_string_to_number(str(el2)) + "|" + str(el3)
+    return str(el1) + "|" + number_to_b64(board_string_to_number(str(el2))) + "|" + ("N" if el3 is None else str(el3[0]) + str(el3[1]))
 
 
 def traverse_and_replace_tuples_in_keys_with_strings(dictionary):
