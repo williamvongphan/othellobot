@@ -1,5 +1,6 @@
 # Credit to https://github.com/hummuswins/Othello_Game_Logic/blob/master/point.py
 import copy
+import json
 
 NONE = 0  # This is the game constants, setting colors to integer
 BLACK = 1
@@ -96,7 +97,14 @@ class GameBoard:
     def to_dict(self):
         formatted_board = []
         for row in self.board:
-            formatted_board.append([piece.color for piece in row])
+            formatted_board.append([])
+            for piece in row:
+                if (piece.color == BLACK):
+                    formatted_board[-1].append(1)
+                elif (piece.color == WHITE):
+                    formatted_board[-1].append(2)
+                else:
+                    formatted_board[-1].append(0)
         return {
             'board': formatted_board,
             'black_disc': self.black_disc,
@@ -269,11 +277,21 @@ class GameState:
         self.winning_condition = '>'
 
     def to_dict(self):
+        winner = None
+        with open('info.json', 'r') as f:
+            info = json.load(f)
+        if self.ending_condition_met():
+            winner = self.winner
         return {
             'board': self.board.to_dict(),
             'turn': self.turn,
+            'done': self.ending_condition_met(),
             'winning_condition': self.winning_condition,
-            'winner': self.winner
+            'winner': winner,
+            'p1_score': self.board.black_disc,
+            'p2_score': self.board.white_disc,
+            'possible_moves': list(self.full_possible_moves()),
+            'selfplay_info': info
         }
 
     def piece_count(self, color):

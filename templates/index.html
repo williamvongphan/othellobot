@@ -1,0 +1,399 @@
+<html>
+<!-- Othello AI Web template -->
+<!-- Original inspiration: http://bert.stuy.edu/pbrooks/ai/othello/othello_setup.py?gamedriver=http://bert.stuy.edu/pbrooks/ai/othello/GameDriver.py&progfile=othello-pb-minimax.py -->
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/noty/3.1.4/noty.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdn.jsdelivr.net/gh/loadingio/transition.css@v2.0.0/dist/transition.min.css"/>
+
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin: 0 auto;
+            padding: 0;
+            width: 100%;
+        }
+
+        .row {
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+
+        .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+            position: relative;
+            min-height: 1px;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            grid-gap: 0px;
+            width: calc(600px + 12vw);
+            align-items: center !important;
+            margin: 0 auto;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(1, 1fr);
+            width: 100%;
+            align-items: center;
+            text-align: center;
+        }
+
+        .cell {
+            border: 1px solid black;
+            height: calc(80px + 1.5vw);
+            width: calc(80px + 1.5vw);
+            display: -webkit-flexbox;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-align: center;
+            background-color: green;
+            -ms-flex-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .piece-count {
+            color: red;
+        }
+
+        .circle {
+            border-radius: 50%;
+            width: calc(60px + 1vw);
+            height: calc(60px + 1vw);
+            margin: auto;
+            transition: all 0.5s ease;
+        }
+
+        .seperator {
+            margin: 50px;
+        }
+
+        .modal {
+            transition: all 0.3s
+        }
+
+        .link {
+            text-decoration: none;
+            color: #4444FF;
+            transition: all 0.3s ease;
+        }
+
+        .link:hover {
+            color: #FF4444;
+        }
+
+        .button {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .select {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .col {
+            margin: 0 auto
+        }
+    </style>
+    <script>
+        let user_can_click = true;
+        let game_running = false;
+        let player_turn = 1;
+        let user_can_play_1 = true;
+        let user_can_play_2 = true;
+    </script>
+</head>
+<body>
+<div style="text-align: center; align-items: center; align: center; justify-content: center" class="snap snap-y snap-mandatory">
+    <h1 class="text-7xl leading-loose">Othello</h1>
+    <!-- Create an 8x8 grid -->
+    <table id="game-grid" class="game-grid">
+    </table>
+    <div>
+        <!-- Here we'll show some game statistics -->
+        <div class="columns-3">
+            <div>
+                <h1 id="player-1-pieces" class="text-7xl leading-loose piece-count">Loading</h1>
+                <p class="text-3xl">Player 1</p>
+            </div>
+            <div>
+                <h1 id="player-turn" class="text-7xl leading-loose piece-count">Loading</h1>
+                <p class="text-3xl">Turn</p>
+            </div>
+            <div>
+                <h1 id="player-2-pieces" class="text-7xl leading-loose piece-count">Loading</h1>
+                <p class="text-3xl">Player 2</p>
+            </div>
+        </div>
+    </div>
+    <hr class="seperator">
+    <!-- AI multiple-choice selection -->
+    <div class="columns-3 snap-center col">
+        <div>
+            <label class="text-3xl">Player 1</label>
+            <select id="player-1-ai" class="text-3xl select" name="player-1">
+                <option value="human">Human</option>
+                <option value="random">Random</option>
+                <option value="minimax">Minimax</option>
+                <option value="selfplay">Selfplay</option>
+            </select>
+            <button value="Change" class="text-3xl button" id="cp1">Change</button>
+        </div>
+        <div>
+            <button id="new-game-button" class="button text-3xl">New Game</button>
+        </div>
+        <div>
+            <label class="text-3xl">Player 2</label>
+            <select id="player-2-ai" class="text-3xl select" name="player-2">
+                <option value="human">Human</option>
+                <option value="random">Random</option>
+                <option value="minimax">Minimax</option>
+                <option value="selfplay">Selfplay</option>
+            </select>
+            <button value="Change" class="text-3xl button" id="cp2">Change</button>
+        </div>
+    </div>
+    <hr class="seperator">
+    <div id="random-info" class="w-3/5 snap-center col">
+        <h1 class="text-4xl leading-loose">Random</h1>
+        <p class="text-xl">
+            Random is a simple AI that randomly chooses a valid move. It is the easiest AI to play, but considering how this game works, it is not as easy as one might think.
+        </p>
+    </div>
+    <hr class="seperator">
+    <div id="minimax-info" class="w-3/5 snap-center col">
+        <h1 class="text-4xl leading-loose">Minimax</h1>
+        <p class="text-xl">
+            Minimax is a more advanced AI that uses a minimax algorithm to determine the best move. It is definitely more advanced than random, but can take a significantly longer time to compute. Here, the Minimax algorithm computes moves two levels deep, meaning it will look at the best move for each of the two players.
+        </p>
+    </div>
+    <hr class="seperator">
+    <div id="selfplay-info" class="w-3/5 snap-center col">
+        <h1 class="text-4xl leading-loose">Selfplay</h1>
+        <p class="text-xl">
+            Selfplay is the most advanced algorithm here. It is much more advanced, and faster than, both Minimax and Random. Because it plays itself many times, it is able to learn from itself. This is a very powerful AI with a genetic algorithm built in. However, it needs a lot of training data to reach its best performance, which it currently doesn't have. It is actively training during your game, though!
+        </p>
+    </div>
+    <hr class="seperator">
+    <div id="selfplay-stats" class="w-3/5 snap-center col">
+        <h1 class="text-4xl leading-loose">Selfplay Statistics</h1>
+        <p class="text-xl">
+            Selfplay has currently played <strong><span id="selfplay-games-played">Loading</span></strong> games and its model has <strong><span id="selfplay-parameters">Loading</span></strong> parameters.
+        </p>
+        <p class="text-base text-gray-400">
+            For these statistics to be updated, please make sure at least one of the players is set to Selfplay.
+        </p>
+    </div>
+    <hr class="seperator">
+    <footer class="snap-center w-3/5 col">
+        <p class="text-base text-gray-400">This is an <a class="link" href="https://en.wikipedia.org/wiki/Reversi">Othello (Reversi)</a> game online, with a couple of AIs that you can choose to play against. Idea, again, came from Peter Brooks. <a href="http://bert.stuy.edu/pbrooks/ai/othello/othello_setup.py?gamedriver=http://bert.stuy.edu/pbrooks/ai/othello/GameDriver.py&progfile=othello-pb-minimax.py" class="link">Original</a></a></p>
+        <p class="text-xs leading-loose text-gray-400">&copy; ThunderRedStar 2022. All rights reserved.</p>
+    </footer>
+</div>
+<!-- SocketIO -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js"></script>
+<script>
+    function setPiece(x, y, owner, possible) {
+        let piece = document.getElementById("cell-" + x + "-" + y);
+        if (owner === 0) {
+            // Get the circle inside it by ID piece-x-y
+            let circle = document.getElementById("piece-" + x + "-" + y);
+            circle.style.backgroundColor = "transparent";
+            circle.style.borderColor = "transparent";
+        } else if (owner === 1) {
+            // Get the circle inside it by ID piece-x-y
+            let circle = document.getElementById("piece-" + x + "-" + y);
+            circle.style.backgroundColor = "black";
+            circle.style.borderColor = "white";
+        } else if (owner === 2) {
+            // Get the circle inside it by ID piece-x-y
+            let circle = document.getElementById("piece-" + x + "-" + y);
+            circle.style.backgroundColor = "white";
+            circle.style.borderColor = "black";
+        }
+        if (possible) {
+            piece.style.backgroundColor = "darkgreen";
+        } else {
+            piece.style.backgroundColor = "green";
+        }
+    }
+
+    function contains(arr, target) {
+        return arr.some(function (a) {
+            return a.length === target.length && a.every(function (x, i) {
+                return x === target[i]
+            })
+        })
+    }
+
+    // Extend array with contains function
+    Array.prototype.contains = function (target) {
+        return contains(this, target)
+    }
+
+    // First, populate the grid with empty cells
+    for (let i = 0; i < 8; i++) {
+        let row = document.createElement("tr");
+        row.id = "row-" + i;
+        row.className = "row";
+        for (let j = 0; j < 8; j++) {
+            let cell = document.createElement("td");
+            cell.className = "cell";
+            cell.id = "cell-" + i + "-" + j;
+            cell.onclick = function () {
+                if (user_can_click) {
+                    console.log("Clicked on cell " + i + " " + j);
+                    socket.emit("move-attempt", {
+                        x: i,
+                        y: j,
+                        player: player_turn
+                    });
+                }
+            };
+            let piece = document.createElement("div");
+            piece.className = "circle";
+            piece.id = "piece-" + i + "-" + j;
+            piece.backgroundColor = "transparent";
+            piece.borderColor = "transparent";
+            piece.borderWidth = "1px";
+            piece.borderStyle = "solid";
+            cell.appendChild(piece);
+            row.appendChild(cell);
+        }
+        document.getElementById("game-grid").appendChild(row);
+    }
+
+    // Now try to establish a socket connection to the server
+    var socket = io();
+
+    socket.on('connect', function () {
+        console.log("Connected to server");
+        new Noty({
+            theme: 'sunset',
+            text: 'Connected to server.',
+            type: 'success',
+            layout: 'topRight',
+            timeout: 5000
+        }).show();
+    });
+
+    socket.on('game_state', function (data) {
+        socket.emit("acknowledge", {});
+        user_can_click = false;
+        console.log("Received game state");
+        console.log(data);
+        console.log(data.possible_moves)
+        // Update the game state
+        for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
+                setPiece(i, j, data.board.board[i][j], data.possible_moves.contains([i, j]));
+            }
+        }
+        // Update the piece counts
+        document.getElementById("player-1-pieces").innerHTML = data.board.black_disc;
+        document.getElementById("player-2-pieces").innerHTML = data.board.white_disc;
+
+        // Update the turn
+        if (data.turn === 1) {
+            player_turn = 1;
+            document.getElementById("player-turn").innerHTML = "<strong>Black</strong> (Player 1)";
+        } else {
+            player_turn = 2;
+            document.getElementById("player-turn").innerHTML = "<strong>White</strong> (Player 2)";
+        }
+
+        // Update global turn state
+        user_can_click = true;
+        game_running = true;
+        player_turn = data.turn;
+
+        if (data.winner !== null) {
+            // Create a new modal to show the winner
+            let modal = document.createElement("div");
+            modal.className = "modal";
+            modal.id = "winner-modal";
+            modal.style.zIndex = "100";
+            modal.style.position = "fixed";
+            modal.style.margin = "0 auto";
+            let modal_content = document.createElement("div");
+            modal_content.className = "modal-content ldt-bounce-in";
+            modal_content.innerHTML = `<h1>Winner</h1>
+            <p>Player ${data.winner == "BLACK" ? 1 : 2} won!</p>`;
+
+            new Noty({
+                theme: 'sunset',
+                text: 'Player ' + data.winner + ' wins!',
+                type: 'success',
+                layout: 'topRight',
+                timeout: 10000
+            }).show();
+        }
+    });
+
+    socket.on('error', function (data) {
+        console.log("Error: " + data);
+        new Noty({
+            theme: 'sunset',
+            text: data,
+            type: 'error',
+            layout: 'topRight',
+            timeout: 5000
+        }).show();
+    });
+
+    socket.on('player-change-success', function (data) {
+        console.log("Player change success");
+        console.log(data);
+        new Noty({
+            theme: 'sunset',
+            text: 'Changed player ' + data.player + ' to ' + data.option,
+            type: 'success',
+            layout: 'topRight',
+            timeout: 5000
+        }).show();
+    });
+
+    socket.on('disconnect', function () {
+        console.log("Disconnected from server");
+    });
+
+    // Attach event handlers to buttons cp1 and cp2
+    document.getElementById("cp1").onclick = function () {
+        let selected_option = document.getElementById("player-1-ai").value;
+        user_can_play_1 = selected_option === "human";
+        socket.emit("player-change", {player: 1, option: selected_option});
+    };
+
+    document.getElementById("cp2").onclick = function () {
+        let selected_option = document.getElementById("player-2-ai").value;
+        user_can_play_2 = selected_option === "human";
+        socket.emit("player-change", {player: 2, option: selected_option});
+    };
+
+    document.getElementById("new-game-button").onclick = function () {
+        socket.emit("new-game");
+    }
+</script>
+</body>
+</html>

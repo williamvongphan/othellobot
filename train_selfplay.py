@@ -39,4 +39,5 @@ if __name__ == '__main__':
     # Play 10000 games of Othello against itself.
     game_state = GameState('FULL', 8, 8, 'B', 'W', '>')
     self_play = SelfPlay(game_state)
+    self_play.load_q()
     self_play.train(100)

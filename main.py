@@ -128,6 +128,9 @@ if __name__ == '__main__':
                     # Print number of red disks in red
                     print('Red has \x1b[1;31m' + str(game_state.board.white_disc) + '\x1b[0m disks.')
                     print('Blue has \x1b[1;34m' + str(game_state.board.black_disc) + '\x1b[0m disks.')
+                    # If the AI is a SelfPlay, print the number of games it has played.
+                    if player2 == 'selfplay':
+                        print('SelfPlay has \x1b[1;34m' + str(ai.num_games_played()) + '\x1b[0m parameters so far.')
                     print()
                     player_now = "Blue" if game_state.turn == game_lib.BLACK else "Red"
                     print('It is ' + player_now + '\'s turn.')
@@ -207,6 +210,8 @@ if __name__ == '__main__':
                     # Print number of red disks in red
                     print('Red has \x1b[1;31m' + str(game_state.board.white_disc) + '\x1b[0m disks.')
                     print('Blue has \x1b[1;34m' + str(game_state.board.black_disc) + '\x1b[0m disks.')
+                    if player1 == 'selfplay':
+                        print('SelfPlay has \x1b[1;31m' + str(ai.num_games_played()) + '\x1b[0m parameters so far.')
                     print()
                     player_now = "Blue" if game_state.turn == game_lib.BLACK else "Red"
                     print('It is ' + player_now + '\'s turn.')
@@ -293,6 +298,10 @@ if __name__ == '__main__':
                     # Print number of red disks in red
                     print('Red has \x1b[1;31m' + str(game_state.board.white_disc) + '\x1b[0m disks.')
                     print('Blue has \x1b[1;34m' + str(game_state.board.black_disc) + '\x1b[0m disks.')
+                    if player1 == 'selfplay':
+                        print('SelfPlay has \x1b[1;31m' + str(ai_1.num_games_played()) + '\x1b[0m parameters so far.')
+                    if player2 == 'selfplay':
+                        print('SelfPlay has parameters \x1b[1;34m' + str(ai_2.num_games_played()) + '\x1b[0m so far.')
                     print()
                     player_now = "Blue" if game_state.turn == game_lib.BLACK else "Red"
                     print('It is ' + player_now + '\'s turn.')
@@ -338,5 +347,3 @@ if __name__ == '__main__':
                 print()
                 game_winner = "\x1b[1;31mRed\x1b[0m" if "WHITE" == game_state.winner else "\x1b[1;34mBlue\x1b[0m"
                 print(game_winner + ' wins!')
-
-

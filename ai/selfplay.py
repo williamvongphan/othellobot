@@ -4,6 +4,7 @@ import threading
 
 import random
 
+
 def num_to_player(num):
     if num == 0:
         return 'BLACK'
@@ -11,6 +12,7 @@ def num_to_player(num):
         return 'WHITE'
     else:
         return None
+
 
 def tuple_to_str(tuple_):
     return str(tuple_[0]) + ',' + str(tuple_[1])
@@ -49,6 +51,10 @@ def traverse_and_replace_strings_in_keys_with_tuples(dictionary):
 
 class SelfPlay:
     def __init__(self, game_state):
+        self.info = {
+            "rounds_trained": 0,
+            "num_params": 0
+        }
         self.game_state = game_state
         self.q = {}
         self.alpha = 0.5
@@ -78,7 +84,7 @@ class SelfPlay:
         if self.q[handle(game_state.turn, game_state.board, action)] != 0:
             return self.q[handle(game_state.turn, game_state.board, action)]
 
-    def get_reward(self, old_count = None):
+    def get_reward(self, old_count=None):
         score = 0
         if self.game_state.ending_condition_met():
             if self.game_state.winner == self.game_state.turn:
@@ -101,6 +107,8 @@ class SelfPlay:
         # It returns the dictionary.
         with open(file_path, 'r') as f:
             self.q = json.load(f)
+        with open("info.json", 'r') as f:
+            self.info = json.load(f)
         return self.q
 
     def save_q(self, file_path='q.json'):
@@ -108,6 +116,8 @@ class SelfPlay:
         # It returns the dictionary.
         with open(file_path, 'w') as f:
             json.dump(self.q, f)
+        with open("info.json", 'w') as f:
+            json.dump(self.info, f)
         return self.q
 
     def move(self, epsilon=True):
@@ -156,5 +166,19 @@ class SelfPlay:
 
             self.update_q(self.game_state, None, self.get_reward(self.game_state))
             print("Game " + str(i) + " over.")
-            self.save_q()
+            self.info["rounds_trained"] += 1
+            if i % 5 == 0:
+                self.save_q()
             self.game_state.reset()
+
+    def num_params(self):
+        # Reload the Q-values from the file.
+        self.load_q()
+        # Count the number of Q-values
+        return self.info["num_params"]
+
+    def num_games_trained(self):
+        # Reload the Q-values from the file.
+        self.load_q()
+        # Count the number of games trained
+        return self.info["rounds_trained"]
